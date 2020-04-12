@@ -3,58 +3,169 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const BattleshipSchema = new Schema({
-    player1: {
-        asAttacker: {
-            grid: {
-                '11': {
-                    placed: ['true', 'false'],
-                    hit: ['true', 'false'],
-                    called: ['true', 'false'],
-                    shipName: [''],
-
-                }
-            },
-            locationsCalledSequence: [],
-            movesCount: Number
-        },
-        asDefender: {
-            grid: {
-                '11': {
-                    placed: ['true', 'false'],
-                    hit: ['true', 'false'],
-                    called: ['true', 'false'],
-                    shipName: [''],
-
-                }
-            },
-            locationsCalledSequence: [],
-            coordinatesCovered: []
-        }
+const PlayerSchema = new Schema({
+    fullName: {
+        type: String,
+        unique: true,
+        required: true
     },
-    player2: {
-
+    email: {
+        type: String,
+        unique: true,
+        required: true
     },
-    status: ['registered', 'running', 'finished', 'cancelled', 'paused'],
-    startDatetime: Timestamp,
-    lastUpdate: Timestamp,
-    currentMatch: {
-        attacker: '',
-        defender: ''
+    userName: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    userNameLC: {
+        type: String,
+        unique: true,
+        lowercase: true,
+        required: true
+    },
+    registeredOn: {
+        type: Number,
+        default: +new Date()
+    },
+    metaData: {
+        type: mongoose.Schema.Types.Mixed
     }
 });
-/**
- * Hook a pre save method to hash the password
- */
-BattleshipSchema.pre('save', function (next) {
-    if (this.player1 && this.isModified('player1')) {
-        if (Array.isArray(this.boardSize) && this.boardSize.length == 2) {
-            if (this.boardSize[0] == this.boardSize[1]) {
 
-            }
-        } 
+const GameSchema = new Schema({
+    startedOn: {
+        type: Number,
+        default: 0
+    },
+    endedOn: {
+        type: Number,
+        default: 0 // +new Date()
+    },
+    createdOn: {
+        type: Number,
+        default: +new Date()
+    },
+    createdBy: {
+        ref: 'Player',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    status: {
+        type: String,
+        enum: ['waiting', 'ready', 'placing', 'running', 'cancelled', 'paused', 'finished', 'expired'],
+        default: 'waiting'
+    },
+    winner: {
+        ref: 'Player',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    winningAttempt: {
+        type: Number,
+        default: 0
+    },
+    metaData: {
+        type: mongoose.Schema.Types.Mixed
     }
-    this.readableUserId += 10000000;
-    next();
 });
-module.exports = mongoose.model('Battleship', BattleshipSchema);
+
+const BoardSchema = new Schema({
+    playerId: {
+        ref: 'Player',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    gameId: {
+        ref: 'Game',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    status: {
+        type: String,
+        enum: ['ready', 'placing', 'running', 'stopped'],
+        default: 'ready'
+    },
+    createdOn: {
+        type: Number,
+        default: +new Date()
+    },
+    metaData: {
+        type: mongoose.Schema.Types.Mixed
+    },
+    placement: {
+        type: mongoose.Schema.Types.Mixed,
+        default: [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+    },
+    hits: {
+        type: Number,
+        default: 0
+    }
+});
+
+const AttackSchema = new Schema({
+    playerId: {
+        ref: 'Player',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    gameId: {
+        ref: 'Game',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    boardId: {
+        ref: 'Board',
+        type: mongoose.Schema.Types.ObjectId
+    },
+    createdOn: {
+        type: Number,
+        default: +new Date()
+    },
+    coordinate: {
+        type: String
+    },
+    action: {
+        type: String,
+        enum: ['miss', 'hit']
+    },
+    isLastHit: {
+        type: Boolean,
+        default: false
+    },
+    shipSunk: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const __ROW = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5, G: 6, H: 7, I: 8, J: 9 }
+const __WINNING = 30
+const __SHIPS = {
+    battleship: { count: 1, points: 5, identifier: 'B' },
+    cruisers: { count: 2, points: 4, identifier: 'C' },
+    destroyers: { count: 3, points: 3, identifier: 'D' },
+    submarines: { count: 4, points: 2, identifier: 'S' }
+}
+const SHIP_IDENTIFIER = {
+    B: 'battleship',
+    C: 'cruisers',
+    D: 'destroyers',
+    S: 'submarines'
+}
+module.exports = {
+    PlayerModel: mongoose.model('Player', PlayerSchema),
+    GameModel: mongoose.model('Game', GameSchema),
+    BoardModel: mongoose.model('Board', BoardSchema),
+    AttackModel: mongoose.model('Attack', AttackSchema),
+    __ROW,
+    __WINNING,
+    __SHIPS,
+    SHIP_IDENTIFIER
+}
