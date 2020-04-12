@@ -77,3 +77,6 @@ Following are the APIs:
 **App Execution**
 - `npm start`
   * the app will listen to port 3000
+
+**Test Case**
+- find the find `test-cases.txt`
