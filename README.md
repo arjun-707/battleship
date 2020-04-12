@@ -79,4 +79,4 @@ Following are the APIs:
   * the app will listen to port 3000
 
 **Test Case**
-- find the find `test-cases.txt`
+- find the file `test-cases.txt`
