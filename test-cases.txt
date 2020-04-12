@@ -1,0 +1,200 @@
+
+Following are the steps:
+
+1. Create player 1
+  URL: http://localhost:3000/v1/battleship/player/registration
+  POST: {
+    "fullName": "vishal",
+    "email": "vishal@9stacks.com",
+    "userName": "vishal"
+  }
+  Response: {
+    "message": "saved",
+    "error": false,
+    "result": {
+        "registeredOn": "2020-04-12 11:13:07",
+        "playerId": "5e92aa9f6fb83711ff280065",
+        "fullName": "vishal",
+        "email": "vishal@9stacks.com",
+        "userName": "vishal"
+    }
+  }
+
+2. Create player 2
+  URL: http://localhost:3000/v1/battleship/player/registration
+  POST: {
+    "fullName": "amar",
+    "email": "amar@9stacks.com",
+    "userName": "amar"
+  }
+  Response: {
+    "message": "saved",
+    "error": false,
+    "result": {
+        "registeredOn": "2020-04-12 13:04:57",
+        "playerId": "5e92c4d854a9481b242ea8d4",
+        "fullName": "amar",
+        "email": "amar@9stacks.com",
+        "userName": "amar"
+    }
+  }
+2. Create Game Session by Player 1
+  URL: http://localhost:3000/v1/battleship/create/5e92aa9f6fb83711ff280065
+  PUT: Nothing required
+  Response: {
+    "message": "created",
+    "error": false,
+    "result": {
+        "gameId": "5e92c5e254a9481b242ea8d5",
+        "boardId": "5e92c5e254a9481b242ea8d6",
+        "playerId": "5e92aa9f6fb83711ff280065",
+        "status": "waiting"
+    }
+  }
+3. Join Game by Player 2
+  URL: http://localhost:3000/v1/battleship/join/5e92c4d854a9481b242ea8d4/5e92c5e254a9481b242ea8d5
+  PUT: Nothing required
+  Response: {
+    "message": "joined",
+    "error": false,
+    "result": {
+        "gameId": "5e92c5e254a9481b242ea8d5",
+        "player1_boardId": "5e92c5e254a9481b242ea8d6",
+        "player2_boardId": "5e92c60954a9481b242ea8d7",
+        "player1_id": "5e92aa9f6fb83711ff280065",
+        "player2_id": "5e92c4d854a9481b242ea8d4",
+        "status": "ready"
+    }
+  }
+
+4. Place ships by Player 1
+  URL: http://localhost:3000/v1/battleship/place/5e92aa9f6fb83711ff280065/5e92c5e254a9481b242ea8d6
+  POST: {
+    "shipCoordinates":{
+      "battleship": [
+        [{"A": 1}, {"A": 2}, {"A": 3}, {"A": 4}, {"A": 5}]
+      ],
+      "cruisers": [
+        [{"C": 0}, {"D": 0}, {"E": 0}, {"F": 0}],
+        [{"C": 2}, {"D": 2}, {"E": 2}, {"F": 2}]
+      ],
+      "destroyers": [
+        [{"H": 1}, {"I": 1}, {"J": 1}],
+        [{"G": 3}, {"G": 4}, {"G": 5}],
+        [{"I": 3}, {"I": 4}, {"I": 5}]
+      ],
+      "submarines": [
+        [{"A": 7}, {"A": 8}],
+        [{"C": 4}, {"D": 4}],
+        [{"C": 6}, {"D": 6}],
+        [{"J": 6}, {"J": 7}]
+      ]
+    }
+  }
+  Response: {
+    "message": "placed",
+    "error": false,
+    "result": []
+  }
+
+5. Place ships by Player 2
+  URL: http://localhost:3000/v1/battleship/place/5e92aa9f6fb83711ff280065/5e92c5e254a9481b242ea8d6
+  POST: {
+    "shipCoordinates":{
+      "battleship": [
+        [{"A": 2}, {"A": 3}, {"A": 4}, {"A": 5}, {"A": 6}]
+      ],
+      "cruisers": [
+        [{"C": 0}, {"D": 0}, {"E": 0}, {"F": 0}],
+        [{"C": 2}, {"D": 2}, {"E": 2}, {"F": 2}]
+      ],
+      "destroyers": [
+        [{"H": 1}, {"I": 1}, {"J": 1}],
+        [{"G": 3}, {"G": 4}, {"G": 5}],
+        [{"I": 3}, {"I": 4}, {"I": 5}]
+      ],
+      "submarines": [
+        [{"A": 8}, {"A": 9}],
+        [{"C": 4}, {"D": 4}],
+        [{"C": 6}, {"D": 6}],
+        [{"J": 6}, {"J": 7}]
+      ]
+    }
+  }
+  Response: {
+    "message": "placed",
+    "error": false,
+    "result": []
+  }
+
+6. Attack By Player 1
+  URL: http://localhost:3000/v1/battleship/attack/5e92aa9f6fb83711ff280065/5e92c5e254a9481b242ea8d5
+  POST: {
+    "coordinates": {
+    	"A":7
+    }
+  }
+  Response: {
+    "message": "miss",
+    "error": false,
+    "result": []
+  }
+
+7. Attack By Player 2
+  URL: http://localhost:3000/v1/battleship/attack/5e92c4d854a9481b242ea8d4/5e92c5e254a9481b242ea8d5
+  POST: {
+    "coordinates": {
+    	"I":3
+    }
+  }
+  Response: {
+    "message": "hit",
+    "error": false,
+    "result": []
+  }
+8. Follow step 6 & 7 till one player finishes the games
+  * if any attack (coordinate) already requested:
+    Response: {
+      "message": "miss",
+      "error": false,
+      "result": []
+    }
+  * if any attack (coordinate) hit the ship
+    Response: {
+      "message": "hit",
+      "error": false,
+      "result": []
+    }
+  * if any attack (coordinate) mis the ship
+    Response: {
+      "message": "miss",
+      "error": false,
+      "result": []
+    }
+  * if any attack (coordinate) is out of area
+    Response: {
+      "message": "536: {"A":10} coordinate out of range",
+      "error": true,
+      "result": []
+    }
+  * if any attack (coordinate) doesn't match
+    Response: {
+      "message": "674: {"#":9} invalid coordinate",
+      "error": true,
+      "result": []
+    }
+  * if any attack (coordinate) sunk a ship
+    Response: {
+      "message": "You just sunk a destroyers",
+      "error": false,
+      "result": []
+    }
+  * if any attack (coordinate) is the last hit of the game
+    Response: {
+      "message": "Win! You have completed the game in 37 moves.",
+      "error": false,
+      "result": []
+    }
+
+
+NOTE: All the error message will have the line number of the controller file
